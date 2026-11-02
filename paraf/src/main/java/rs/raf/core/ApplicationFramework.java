@@ -1,12 +1,16 @@
 package rs.raf.core;
 
 import rs.raf.gui.swing.MainFrame;
+import rs.raf.model.Folder;
 
 public class ApplicationFramework {
 
     private static ApplicationFramework instance;
 
+    private Folder model;
+
     private ApplicationFramework() {
+        model = new Folder("model", null);
     }
 
     public static ApplicationFramework getInstance() {
