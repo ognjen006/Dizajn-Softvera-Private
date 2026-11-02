@@ -10,7 +10,7 @@ public class ApplicationFramework {
     private Folder model;
 
     private ApplicationFramework() {
-        model = new Folder("model", null);
+        model = new Folder("Project", null);
     }
 
     public static ApplicationFramework getInstance() {
@@ -24,5 +24,12 @@ public class ApplicationFramework {
     public void initialize() {
         MainFrame mainFrame = MainFrame.getInstance();
         mainFrame.setVisible(true);
+    }
+
+
+
+
+    public Folder getModel() {
+        return model;
     }
 }

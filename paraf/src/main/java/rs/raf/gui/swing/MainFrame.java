@@ -1,72 +1,126 @@
 package rs.raf.gui.swing;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Toolkit;
+import rs.raf.controller.ActionManager;
+import rs.raf.core.ApplicationFramework;
+import rs.raf.gui.swing.TreeFrame;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class MainFrame extends JFrame {
 
     private static MainFrame instance;
 
-    public static final String TITLE = "Paraf";
-
-    private static final String FILE_MENU_TITLE = "File";
-    private static final String EXIT_ITEM_TITLE = "Exit";
-    private static final int TEXT_MARGIN = 8;
-    private static final int FONT_SIZE = 14;
-
+    private final ActionManager actionManager;
     private final JTextArea textArea;
+    private final JTree tree;
 
     private MainFrame() {
-        setTitle(TITLE);
+        actionManager = ActionManager.getInstance();
+
+        setTitle("Paraf");
+        setLayout(new BorderLayout());
+
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize(screenSize.width / 2, screenSize.height / 2);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        // I zatvaranje prozora koristi ExitAction.
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                actionManager.getExitAction().actionPerformed(
+                        new ActionEvent(
+                                MainFrame.this,
+                                ActionEvent.ACTION_PERFORMED,
+                                "Exit"
+                        )
+                );
+            }
+        });
+
+        // Meni i toolbar
         setJMenuBar(createMenuBar());
+        add(createToolBar(), BorderLayout.NORTH);
 
+        // Tekstualno polje
         textArea = new JTextArea();
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
-        textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, FONT_SIZE));
-        textArea.setBorder(BorderFactory.createEmptyBorder(TEXT_MARGIN, TEXT_MARGIN, TEXT_MARGIN, TEXT_MARGIN));
+        textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+
+        textArea.setBorder(
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        );
 
         add(new JScrollPane(textArea), BorderLayout.CENTER);
+
+        // Stablo
+        TreeFrame treeModel = new TreeFrame(
+                ApplicationFramework.getInstance().getModel()
+        );
+
+        tree = new JTree(treeModel);
+        tree.setEditable(false);
+        tree.setRootVisible(true);
+        tree.setShowsRootHandles(true);
+
+        JScrollPane treeScrollPane = new JScrollPane(tree);
+        treeScrollPane.setPreferredSize(new Dimension(230, 400));
+
+        add(treeScrollPane, BorderLayout.WEST);
     }
 
     public static MainFrame getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new MainFrame();
         }
 
         return instance;
     }
 
+    private JMenuBar createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+
+        fileMenu.add(
+                new JMenuItem(actionManager.getNewFolderAction())
+        );
+
+        fileMenu.addSeparator();
+
+        fileMenu.add(
+                new JMenuItem(actionManager.getExitAction())
+        );
+
+        menuBar.add(fileMenu);
+        return menuBar;
+    }
+
+    private JToolBar createToolBar() {
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+
+        toolBar.add(actionManager.getNewFolderAction());
+        toolBar.addSeparator();
+        toolBar.add(actionManager.getExitAction());
+
+        return toolBar;
+    }
+
     public JTextArea getTextArea() {
         return textArea;
     }
 
-    private JMenuBar createMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu fileMenu = new JMenu(FILE_MENU_TITLE);
-        fileMenu.setMnemonic(KeyEvent.VK_F);
-
-        JMenuItem exitItem = new JMenuItem(EXIT_ITEM_TITLE);
-        exitItem.addActionListener(event -> System.exit(0));
-        fileMenu.add(exitItem);
-
-        menuBar.add(fileMenu);
-        return menuBar;
+    public JTree getTree() {
+        return tree;
     }
 }

@@ -17,8 +17,9 @@ public class Folder extends Node {
     public void AddNode(Node node) {
         for(Node n : nodes) {
             if(n.toString().equals(node.toString())) {
-                //error
-                return;
+                throw new IllegalArgumentException(
+                        "Fascikla vec sadrzi cvor sa imenom: " + node.getName()
+                );
             }
         }
         node.setParent(this);
@@ -34,34 +35,17 @@ public class Folder extends Node {
 
 
 
-    //region Subscriber
+    private static int folderCounter = 0;
 
-    private final List<Subscriber> subscribers = new ArrayList<>();
-
-    @Override
-    public void addSubscriber(Subscriber subscriber) {
-        if (subscriber != null && !subscribers.contains(subscriber)) {
-            subscribers.add(subscriber);
-        }
+    public static String nextDefaultName() {
+        return "Folder" + (++folderCounter);
     }
 
-    @Override
-    public void removeSubscriber(Subscriber subscriber) {
-        subscribers.remove(subscriber);
-    }
 
     @Override
-    public void notifySubscribers() {
-        for (Subscriber subscriber : new ArrayList<>(subscribers)) {
-            subscriber.update();
-        }
-
-        if (getParent() != null) {
-            getParent().notifySubscribers();
-        }
+    public boolean isLeaf() {
+        return false;
     }
-
-//endregion
 
 
 
